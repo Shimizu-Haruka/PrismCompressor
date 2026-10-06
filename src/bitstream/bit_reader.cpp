@@ -21,7 +21,7 @@ namespace prism::bitstream{
 
     bool BitReader::readBits(int count, std::uint32_t& value)
     {
-        if(bitPos_ + static_cast<std::size_t>(count) >  validBits_)
+        if(bitPos_ + static_cast<std::size_t>(count) > validBits_)
         {
             return 0;
         }
