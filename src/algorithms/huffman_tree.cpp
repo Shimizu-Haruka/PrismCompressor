@@ -1,0 +1,97 @@
+#include"prism/algorithms/huffman_tree.h"
+#include<vector>
+#include<queue>
+
+namespace prism::algorithms{
+    bool HuffmanTree::CompareNode::operator()(const NodePtr& a, const NodePtr& b) const
+    {
+        return a->frequency > b->frequency;//小根堆
+    }
+
+    HuffmanTree::NodePtr HuffmanTree::build(const util::FrequencyTable& freq)
+    {
+        std::priority_queue<NodePtr , std::vector<NodePtr> , CompareNode> pq;
+
+        for(int i = 0; i < 256; ++i)//建立节点并压入优先队列
+        {
+            Byte b = static_cast<Byte>(i);
+            std::size_t count = freq.get(b);
+
+            if(count == 0)
+            {
+                continue;
+            }
+            
+            auto node = std::make_shared<HuffmanNode>();
+            node->frequency = count;
+            node->character = b;
+            node->is_leaf = true;
+            pq.push(node);
+
+        }
+
+        if(pq.size() == 1)//只有一个字符的特殊情况
+        {
+            NodePtr only = pq.top();
+            pq.pop();
+
+            auto root = std::make_shared<HuffmanNode>();
+            root->left = only;
+            root->frequency = only->frequency;
+            return root;
+        }
+
+        auto parent = std::make_shared<HuffmanNode>();
+        while(pq.size() > 1)
+        {
+            auto left = pq.top();
+            pq.pop();
+
+            auto right = pq.top();
+            pq.pop();
+
+            auto parent = std::make_shared<HuffmanNode>();
+            parent->left = left;
+            parent->right = right;
+            parent->frequency = left->frequency + right->frequency;//父节点频率
+
+            pq.push(parent);//压入优先队列
+        }
+        return pq.top();//返回根节点
+    }
+
+    std::array<prism::algorithms::EncodedSymbol , 256>
+    HuffmanTree::generateCodes(const prism::algorithms::HuffmanTree::NodePtr& root)
+    {
+        std::array<EncodedSymbol , 256> codes{};
+
+        if(root == nullptr)
+        {
+            return codes;
+        }
+
+        traverse(root , 0 , 0 , codes);
+        return codes;
+    }
+
+    void HuffmanTree::traverse(const NodePtr& root,
+    uint32_t code,
+    uint8_t length,
+    std::array<EncodedSymbol , 256>& codes)
+    {
+        if(root == nullptr)
+        {
+            return;
+        }
+
+        if(root->is_leaf)
+        {
+            codes[root->character].code = code;
+            codes[root->character].length = length;
+        }
+
+        traverse(root->left , code << 1 , length + 1 , codes);
+        traverse(root->right , code << 1 | 1 , length + 1 , codes);
+        return;
+    }
+}
