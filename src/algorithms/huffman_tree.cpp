@@ -94,4 +94,53 @@ namespace prism::algorithms{
         traverse(root->right , code << 1 | 1 , length + 1 , codes);
         return;
     }
+
+    void HuffmanTree::serialize(const NodePtr& node,bitstream::BitWriter& writer)
+    {
+        if(node == nullptr)
+        {
+            return;
+        }
+        if(node->is_leaf)
+        {
+            writer.writeBit(1);
+            writer.writeBits(node->character , 8);
+            return;
+        }
+
+        writer.writeBit(0);
+        serialize(node->left , writer);
+        serialize(node->right , writer);
+        return;
+    }
+
+    HuffmanTree::NodePtr HuffmanTree::deserialize(bitstream::BitReader& reader)
+    {
+        int bit = 0;
+        if(!reader.readBit(bit))
+        {
+            return nullptr;
+        }
+
+        if(bit == 1)
+        {
+            std::uint32_t value = 0;
+            if(!reader.readBits(8 , value))
+            {
+                return nullptr;
+            }
+            auto node = std::make_shared<HuffmanNode>();
+            node->character = static_cast<Byte>(value);
+            node->is_leaf = true;
+            return node;
+        }
+        else
+        {
+            auto node = std::make_shared<HuffmanNode>();
+            node->left = deserialize(reader);
+            node->right = deserialize(reader);
+            node->is_leaf = false;
+            return node;
+        }
+    }
 }

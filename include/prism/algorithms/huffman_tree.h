@@ -2,6 +2,8 @@
 #include"prism/algorithms/huffman_node.h"
 #include"prism/core/types.h"
 #include"prism/util/frequency_table.h"
+#include"prism/bitstream/bit_writer.h"
+#include"prism/bitstream/bit_reader.h"
 
 namespace prism::algorithms{
     class HuffmanTree{
@@ -23,6 +25,15 @@ namespace prism::algorithms{
         uint32_t code,
         uint8_t length,
         std::array<EncodedSymbol , 256>& codes);//遍历树，生成编码表
+    
+    public:
+    static void serialize(
+        const NodePtr& node,
+        bitstream::BitWriter& writer);//序列化树
+    
+    static NodePtr deserialize(
+        bitstream::BitReader& reader
+    );//反序列化树
     };
 }
 

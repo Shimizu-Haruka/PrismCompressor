@@ -21,6 +21,7 @@ namespace prism::bitstream
         {
             int bit = (value >> i) & 1;
             writeBit(bit);
+            ++totalBits_;
         }
     }
 
@@ -37,6 +38,7 @@ namespace prism::bitstream
         data_.clear();
         currentByte_ = 0;
         bitCount_ = 0;
+        totalBits_ = 0;
     }
 
     void BitWriter::finish()
@@ -49,5 +51,10 @@ namespace prism::bitstream
             currentByte_ = 0;
             bitCount_ = 0;//清除缓存
         }
+    }
+
+    std::size_t BitWriter::totalBits()const
+    {
+        return totalBits_;
     }
 }

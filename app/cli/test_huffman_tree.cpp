@@ -60,9 +60,41 @@ void testGenerateCodes()
     std::cout << "test generate code pass" << std::endl;
 }
 
+void testSerializeDeserialize()
+{
+    prism::util::FrequencyTable freq;
+    prism::ByteBuffer testData = {'a', 'b', 'a', 'b', 'c', 'a', 'a', 'd', 'c'};
+    freq.build(testData);
+
+    prism::bitstream::BitWriter writer;
+    auto root = prism::algorithms::HuffmanTree::build(freq);
+    prism::algorithms::HuffmanTree::serialize(root , writer);
+    writer.finish();
+
+    prism::bitstream::BitReader reader(writer.getData() , writer.totalBits());
+    auto newRoot = prism::algorithms::HuffmanTree::deserialize(reader);
+
+    auto codes1 = prism::algorithms::HuffmanTree::generateCodes(root);
+    auto codes2 = prism::algorithms::HuffmanTree::generateCodes(newRoot);
+
+    for (int i = 0; i < 256; ++i)
+    {
+        assert(codes1[i].length == codes2[i].length);
+        if (codes1[i].length > 0)
+        {
+            assert(codes1[i].code == codes2[i].code);
+        }
+    }//验证编码表是否一致
+
+    std::cout << "test serialize deserialize pass" << std::endl;
+    return;
+
+}
+
 int main()
 {
     testHuffmanTreeSimple();
     testGenerateCodes();
+    testSerializeDeserialize();
     return 0;
 }
