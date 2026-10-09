@@ -1,7 +1,9 @@
 #include"prism/algorithms/huffman_tree.h"
+#include"prism/algorithms/huffman.h"
 
 #include<iostream>
 #include<cassert>
+#include<vector>
 
 std::size_t weightPathLength(
     const prism::algorithms::HuffmanTree::NodePtr& node,
@@ -60,6 +62,24 @@ void testGenerateCodes()
     std::cout << "test generate code pass" << std::endl;
 }
 
+void testRoot(prism::algorithms::HuffmanTree::NodePtr root)
+{
+    if(root == nullptr)
+    {
+        std::cout << "root is null" << std::endl;
+        return;
+    }
+    std::cout << root->character << std::endl;
+    if(root->left != nullptr)
+        std::cout << "l" << root->left->character;
+    if(root->right != nullptr)
+        std::cout << "r"<< root->right->character;
+    std::cout << std::endl;
+    testRoot(root->left);
+    testRoot(root->right);
+    return;
+}
+
 void testSerializeDeserialize()
 {
     prism::util::FrequencyTable freq;
@@ -71,14 +91,29 @@ void testSerializeDeserialize()
     prism::algorithms::HuffmanTree::serialize(root , writer);
     writer.finish();
 
+    // std::cout << "root:" << std::endl;
+    // testRoot(root);
+
+    // for (int i = 0; i < 256; ++i) {
+    // if (freq.get(i) > 0)
+    //     std::cout << (char)i << " -> " << freq.get(i) << std::endl;
+    // }
+    //freq pass
+
+
     prism::bitstream::BitReader reader(writer.getData() , writer.totalBits());
     auto newRoot = prism::algorithms::HuffmanTree::deserialize(reader);
+
+    // std::cout << "new root:" << std::endl;
+    // testRoot(newRoot);
 
     auto codes1 = prism::algorithms::HuffmanTree::generateCodes(root);
     auto codes2 = prism::algorithms::HuffmanTree::generateCodes(newRoot);
 
     for (int i = 0; i < 256; ++i)
     {
+        // std::cout << i << std::endl;
+        // std::cout << codes1[i].code << ' ' << codes2[i].code << std::endl;
         assert(codes1[i].length == codes2[i].length);
         if (codes1[i].length > 0)
         {
@@ -91,10 +126,35 @@ void testSerializeDeserialize()
 
 }
 
+void testHuffmanRoundTrip()
+{
+    prism::algorithms::HuffmanCompressor huff;
+    std::vector<prism::ByteBuffer> testData = {
+        {'a'},
+        {},
+        {'a' , 'b'},
+        {'a' , 'b' , 'a' , 'b' , 'a' , 'c'},
+        {'a' , 'b' , 'c' , 'd' , 'e' , 'e' , 'e'}
+    };
+    
+    for(auto i : testData)
+    {
+        // std::cout << "test data: ";
+        auto comp = huff.compress(i);
+        auto decomp = huff.decompress(comp);
+
+        assert(i == decomp);
+    }
+
+    std::cout << "test huffman round trip pass" << std::endl;
+    return;
+}
+
 int main()
 {
     testHuffmanTreeSimple();
     testGenerateCodes();
     testSerializeDeserialize();
+    testHuffmanRoundTrip();
     return 0;
 }

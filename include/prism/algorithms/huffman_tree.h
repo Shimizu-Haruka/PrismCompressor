@@ -20,20 +20,20 @@ namespace prism::algorithms{
         bool operator()(const NodePtr& a, const NodePtr& b) const;//重载运算符
     }; 
 
-    static void traverse(
+    static void traverse(//遍历树，生成编码表
         const NodePtr& root,
         uint32_t code,
         uint8_t length,
-        std::array<EncodedSymbol , 256>& codes);//遍历树，生成编码表
+        std::array<EncodedSymbol , 256>& codes);
     
     public:
-    static void serialize(
+    static void serialize(//序列化树
         const NodePtr& node,
-        bitstream::BitWriter& writer);//序列化树
+        bitstream::BitWriter& writer);
     
-    static NodePtr deserialize(
+    static NodePtr deserialize(//反序列化树
         bitstream::BitReader& reader
-    );//反序列化树
+    );
     };
 }
 

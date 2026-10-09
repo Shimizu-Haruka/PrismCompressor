@@ -6,6 +6,7 @@ namespace prism::bitstream
     {
         currentByte_ = (currentByte_ << 1) | (bit & 1);
         ++bitCount_;
+        ++totalBits_;
         if(bitCount_ == 8)
         {
             data_.push_back(currentByte_);
@@ -21,7 +22,6 @@ namespace prism::bitstream
         {
             int bit = (value >> i) & 1;
             writeBit(bit);
-            ++totalBits_;
         }
     }
 

@@ -10,7 +10,7 @@ namespace prism::algorithms
             return input;
         }
         bitstream::BitWriter writer;
-        writer.writeBits(static_cast<uint64_t>(input.size()) , 64);//写入原字节大小
+        writer.writeBits(static_cast<uint64_t>(input.size()) , 32);//写入原字节大小
 
         util::FrequencyTable freq;
         freq.build(input);//统计频率
@@ -30,7 +30,7 @@ namespace prism::algorithms
         return writer.getData();
     }
 
-    std::string name(){
+    std::string HuffmanCompressor::name()const{
         return "Huffman";
     }
 
@@ -44,7 +44,7 @@ namespace prism::algorithms
         bitstream::BitReader reader(input , input.size() * 8);
         
         std::uint32_t originalSize = 0;
-        if(!reader.readBits(64 , originalSize))//无法读取原大小
+        if(!reader.readBits(32 , originalSize))//无法读取原大小
         {
             return {};
         }
@@ -56,6 +56,14 @@ namespace prism::algorithms
         }
 
         ByteBuffer result;
+
+        if(root->is_leaf)
+        {
+            result.reserve(originalSize);
+            for(std::size_t i = 0; i < originalSize; ++i)
+                result.push_back(root->character);
+            return result;
+        }
 
         auto current = root;
         result.reserve(originalSize);//预留空间
@@ -69,11 +77,11 @@ namespace prism::algorithms
 
             if(bit == 0)
             {
-                current = root->left;
+                current = current->left;
             }
             else
             {
-                current = root->right;
+                current = current->right;
             }
             if(current == nullptr)
             {

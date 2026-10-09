@@ -79,3 +79,11 @@ void testRoundTripDoubleByte()
 
     std::cout << "pass" << std::endl;
 }
+
+int main()
+{
+    testRoundTripFullByte();
+    testRoundTripSingleBit();
+    testRoundTripPartialByte();
+    testRoundTripDoubleByte();  
+}

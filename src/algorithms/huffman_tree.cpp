@@ -32,16 +32,10 @@ namespace prism::algorithms{
 
         if(pq.size() == 1)//只有一个字符的特殊情况
         {
-            NodePtr only = pq.top();
-            pq.pop();
-
-            auto root = std::make_shared<HuffmanNode>();
-            root->left = only;
-            root->frequency = only->frequency;
-            return root;
+            return pq.top();
         }
 
-        auto parent = std::make_shared<HuffmanNode>();
+
         while(pq.size() > 1)
         {
             auto left = pq.top();
@@ -87,7 +81,8 @@ namespace prism::algorithms{
         if(root->is_leaf)
         {
             codes[root->character].code = code;
-            codes[root->character].length = length;
+            codes[root->character].length = (length == 0) ? 1 : length;
+            return;
         }
 
         traverse(root->left , code << 1 , length + 1 , codes);

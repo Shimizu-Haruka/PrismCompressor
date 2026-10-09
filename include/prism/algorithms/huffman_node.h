@@ -16,7 +16,7 @@ namespace prism::algorithms{
 
     struct EncodedSymbol//编码字符
     {
-        std::uint32_t code;
-        std::uint8_t length;
+        std::uint32_t code;//编码字符
+        std::uint8_t length;//编码长度
     };
 }
