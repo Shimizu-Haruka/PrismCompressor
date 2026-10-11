@@ -97,4 +97,8 @@ namespace prism::algorithms
         return result;
 
     }
+
+    std::string HuffmanCompressor::name()const{
+        return "huffman";
+    }
 }
