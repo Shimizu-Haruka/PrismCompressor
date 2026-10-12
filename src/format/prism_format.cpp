@@ -10,7 +10,7 @@ void writeUint16(ByteBuffer& buf , std::uint16_t value)//拆出2Byte
     buf.push_back(static_cast<Byte>((value >> 8) & 0xff));
 }
 
-void writeUint32(ByteBuffer& buf,std::uint16_t value)//拆出4Byte
+void writeUint32(ByteBuffer& buf,std::uint32_t value)//拆出4Byte
 {
     buf.push_back(static_cast<Byte>(value & 0xff));
     buf.push_back(static_cast<Byte>((value >>  8) & 0xff));
@@ -50,10 +50,10 @@ std::uint32_t PrismFile::computeChecksum(const ByteBuffer& data)
     return sum;
 }
 
-ByteBuffer pack(const PrismHeader& header, const ByteBuffer& payload)
+ByteBuffer PrismFile::pack(const PrismHeader& header, const ByteBuffer& payload)
 {
     ByteBuffer result;
-    result.reserve(header.originalSize);
+    result.reserve(kHeaderSize + payload.size()); 
 
     writeUint32(result, header.magic);
     result.push_back(header.version);
@@ -76,7 +76,7 @@ bool PrismFile::unpack(const ByteBuffer& fileData, PrismHeader& header ,ByteBuff
     }
 
     std::size_t pos = 0;
-    header.magic = readUint16(fileData , pos);
+    header.magic = readUint32(fileData , pos);
     header.version = fileData[pos++];
     header.algorithm = fileData[pos++];
     header.reserved = readUint16(fileData , pos);

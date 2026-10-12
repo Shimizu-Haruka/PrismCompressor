@@ -30,10 +30,6 @@ namespace prism::algorithms
         return writer.getData();
     }
 
-    std::string HuffmanCompressor::name()const{
-        return "Huffman";
-    }
-
     ByteBuffer HuffmanCompressor::decompress(const ByteBuffer& input)const
     {
         if(input.empty())
@@ -99,6 +95,6 @@ namespace prism::algorithms
     }
 
     std::string HuffmanCompressor::name()const{
-        return "huffman";
+        return "Huffman";
     }
 }
