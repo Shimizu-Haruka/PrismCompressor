@@ -1,0 +1,7 @@
+.vscode/*
+.VSCodeCounter
+*.md
+开发文档.md
+prism html test/index1.html
+prism html test/test1.html
+build
