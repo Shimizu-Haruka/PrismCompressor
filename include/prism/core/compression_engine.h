@@ -5,6 +5,7 @@
 
 namespace prism::core{
 class CompressionEngine{
+public:
     CompressResult compressBuffer(//压缩内存里的数据
         const ByteBuffer& input,
         const CompressionOptions& options = {});

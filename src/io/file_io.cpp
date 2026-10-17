@@ -3,7 +3,7 @@
 
 namespace prism::io{
 ByteBuffer FileIO::readFile(const std::string& path){
-    std::ifstream file(path , std::ios::binary);
+    std::ifstream file(path , std::ios::binary);//输入文件流 二进制模式
 
     if(!file.is_open())
     {
@@ -20,7 +20,7 @@ ByteBuffer FileIO::readFile(const std::string& path){
     }
 
     ByteBuffer result(static_cast<std::size_t>(size));
-    file.read(reinterpret_cast<char*>(result.data()), size);//*uint8_t强转char
+    file.read(reinterpret_cast<char*>(result.data()), size);//*uint8_t强转char，read需要char
 
     if(!file)
     {

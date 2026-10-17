@@ -2,6 +2,7 @@
 #include"prism/core/compressor_factory.h"
 #include"prism/format/prism_format.h"
 #include"prism/core/algorithm_selector.h"
+#include"prism/io/file_io.h"
 // #include"prism/io/file_io.h"
 
 namespace prism::core{
@@ -89,4 +90,51 @@ ByteBuffer CompressionEngine::decompressBuffer(
 
         return codec->decompress(payload);
     }
+
+CompressResult CompressionEngine::compressFile(
+    const std::string inputFile,
+    const std::string outputFile,
+    const CompressionOptions options
+)
+{
+
+    CompressResult result;
+
+    ByteBuffer input = io::FileIO::readFile(inputFile);
+    if(input.empty())
+    {
+        return {};
+    }
+
+    result = compressBuffer(input , options);
+
+    if(!result.data.empty())
+    {
+        io::FileIO::writeFile(outputFile , result.data);
+    }
+
+    return result;
+}
+
+ByteBuffer CompressionEngine::decompressFile(
+        const std::string inputFile,
+        const std::string outputFile,
+        const CompressionOptions options)
+{
+    ByteBuffer prismData = io::FileIO::readFile(inputFile);
+    if(prismData.empty())
+    {
+        return {};
+    }
+
+    ByteBuffer original = decompressBuffer(prismData , options);
+
+    if(!original.empty())
+    {
+        io::FileIO::writeFile(outputFile , original);
+    }
+
+    return original;
+}
+
 }
