@@ -4,7 +4,7 @@
 #include"prism/algorithms/rle.h"
 
 namespace prism::core{
-    std::unique_ptr<ICodec> CompressorFactory(AlgorithmType type)
+    std::unique_ptr<ICodec> CompressorFactory::create(AlgorithmType type)
     {
         switch(type)
         {

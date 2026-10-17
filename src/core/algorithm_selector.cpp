@@ -32,7 +32,7 @@ AlgorithmType AlgorithmSelector::select(const ByteBuffer& input)
             continue;
         }
 
-        if(bestSize < compressed.size())
+        if(bestSize > compressed.size())
         {
             best = algo;
             bestSize = compressed.size();
