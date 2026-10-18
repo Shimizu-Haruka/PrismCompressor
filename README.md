@@ -2,7 +2,6 @@
 
 ![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)
 ![CMake](https://img.shields.io/badge/CMake-3.16%2B-green.svg)
-![License](https://img.shields.io/badge/License-MIT-orange.svg)
 
 一个使用 C++17 从零实现的多算法数据压缩工具与底层压缩框架。
 
@@ -16,7 +15,6 @@
 - [使用说明](#使用说明)
 - [性能基准测试](#性能基准测试)
 - [后续规划](#后续规划)
-- [开源协议](#开源协议)
 
 ## 项目简介
 
@@ -130,8 +128,3 @@ cmake --build .
 - [ ] 实现 Deflate 风格混合压缩：LZ77 匹配 + Huffman 编码。
 - [ ] 引入多线程加速大文件分块压缩。
 - [ ] 开发图形界面（GUI）与可视化压缩过程展示。
-
-## 开源协议
-
-本项目采用 [MIT License](LICENSE) 开源协议。
-```
