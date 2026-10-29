@@ -69,6 +69,42 @@ int main()
         );
     });
 
+    svr.Post("/decompress" , [](const httplib::Request& req , httplib::Response& res){
+        if(req.form.files.count("file") == 0){
+            res.status = 400;
+            res.set_content("Error: Missing file payload" , "text/plain");
+            return;
+        }
+
+        auto it = req.form.files.find("file");
+        auto file = it->second;
+
+        if(file.content.empty())
+        {
+            res.status = 400;
+            res.set_content("Error: Empty file." , "text/plain");
+            return;
+        }
+
+        prism::ByteBuffer input(file.content.begin() , file.content.end());
+
+        prism::core::CompressionEngine engine;
+        prism::ByteBuffer result = engine.decompressBuffer(input);
+
+        if (result.empty()) {
+            res.status = 500;
+            res.set_content("Error: Decompression failed.", "text/plain");
+            return;
+        }
+
+        //把原始文件作为二进制返回
+        res.set_content(
+            reinterpret_cast<const char*>(result.data()),
+            result.size(),
+            "application/octet-stream"
+        );
+    });
+
     std::cout << "open http://localhost:8080/" << std::endl;
     svr.listen("0.0.0.0" , 8080);
 }

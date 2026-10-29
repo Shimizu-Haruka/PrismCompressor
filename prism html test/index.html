@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrismCompressor</title>
+    <style>
+        *{
+            margin : 0;/*外边距*/
+            padding : 0;/*内边距*/
+            box-sizing: border-box;/*改为总宽*/
+        }/*消除浏览器默认样式*/
+
+        body{
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: #f5f7fa;/*背景色*/
+            color: #333;/*文字色*/
+            line-height: 1.6;/*行高 1.6倍*/
+        }
+
+        main{
+            max-width: 720px;/*最宽720px*/
+            margin: 0 auto;/*水平居中 自动平分*/
+            padding: 24px;/*内边距*/
+
+        }
+
+        header{
+            background: linear-gradient(0deg , #709fd5 , #357abd);/*线性渐变背景 135degree 左上到右下*/
+            color: white;
+            padding: 32px 24px;/*上下32px 左右24px*/
+            text-align: center;
+        }
+
+        header h1{
+            font-size: 48px;
+            margin-bottom: 4px;/*下边距*/
+        }
+
+        header p{
+            font-size: 14px;
+            opacity: 0.5;/*透明度*/
+        }
+
+        section{
+            background: white;
+            padding: 20px;/*内部留白*/
+            border-radius: 12px;/*圆角*/
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);/*阴影 水平偏移 / 垂直偏移 / 模糊半径 / 颜色*/
+            margin-bottom: 16px;/*卡片之间16px边距*/
+        }
+
+        .result-row{
+            display: flex;/*变为flex布局，子元素自动横排*/
+            gap: 16px;
+        }
+
+        .result-card{
+            flex: 1;/*卡片平分可用宽度*/
+            text-align: center;/*文字居中*/
+            padding: 16px;/*子元素之间留16px间距*/
+            background: #f0f4f8;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button{
+            padding: 10px 20px;/*上下10px 左右20px*/
+            border: none;/*去掉默认边框*/
+            border-radius: 8px;
+            background: #4a90e2;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;/*鼠标悬停：小手*/
+            transition: background 0.2s;/*过渡动画：背景0.2s*/
+            margin: 5px;
+            box-shadow: 0 2px 8px rgba(0 , 0 , 0 , 0.2);
+        }
+        button:hover{
+            background:#357abd;
+        }
+
+        input[type="file"]{/*属性选择器 只选择选择文件按钮*/
+            margin-top: 8px;/*顶部留一点空隙*/
+            font-size: 14px;
+        }
+
+        label{
+            margin-right: 16px;
+            font-size: 15px;
+        }
+
+        footer{
+            text-align: center;
+            padding: 24px;
+            color: #999;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PrismCompressor</h1>
+    </header>
+
+    <main>
+        <section>
+            <label>选择要压缩的文件：</label>
+            <input type="file" id="file-input"/>
+        </section>
+
+        <section>
+            <p>选择算法：</p>
+            <label><input type="radio" name="algorithm" value="RLE"/>RLE</label><!--label包含文字可点击-->
+            <label><input type="radio" name="algorithm" value="Huffman"/>Huffman</label>
+            <label><input type="radio" name="algorithm" value="LZ77"/>LZ77</label>
+        </section>
+
+        <section class="result-row">
+            <div class="result-card">
+                <button id="compress-btn">压缩</button>
+                <button id="decompress-btn">解压</button>
+                <input type="checkbox" />保留原文件
+            </div>
+            <div class="result-card">
+                <p>原文件大小</p>
+                <p id="size-text">-- 字节</p>
+            </div>
+            <div class="result-card">
+                <p>压缩后大小</p>
+                <p id="compressed-size">-- 字节</p>
+            </div>
+            <div class="result-card">
+                <p>压缩率</p>
+                <p id="ratio">-- %</p>
+            </div>
+        </section>
+        <section>
+            <div id="download-card" style="display: none;">
+                <button id="download-btn" style="display: none;">Download compressed file</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Shimizu Haruka . PrismCompressor</p>
+    </footer>
+
+    <script>
+
+        let compressedBlob = null;//压缩后文件
+        let currentFile = null;//原文件
+
+        const btns = document.querySelectorAll("button");
+
+        btns.forEach(btn => {
+            btn.addEventListener("click" , () =>{
+                btn.style.background = "#123456";
+
+                setTimeout(() =>{
+                    btn.style.background = "";
+                } , 100);//延时100ms
+            })
+        });
+
+
+        let fileInput = document.getElementById("file-input");
+        let sizeText = document.getElementById("size-text");
+        let file;
+
+        fileInput.addEventListener("change" , (event) =>{
+            file = event.target.files[0];
+            if(file){
+                sizeText.innerText = file.size + " Byte";
+                currentFile = file;
+            }
+        });
+
+        /*选择算法*/
+        let compressBtn = document.getElementById("compress-btn");
+        let compressRatio = document.getElementById("ratio");
+        let compressedSize = document.getElementById("compressed-size");
+        let downloadBtn = document.getElementById("download-btn");
+
+        compressBtn.addEventListener("click" , async ()=>{
+            if(!currentFile)
+            {
+                alert("choose file first.");
+                return;
+            }
+
+            let selected = document.querySelector('input[name="algorithm"]:checked');
+            if(!selected)
+            {
+                alert("haven`t choose algorithm");
+                return;
+            }
+
+            //切换状态 防止重复点击
+            compressBtn.disabled = true;
+            compressBtn.innerText = "Compressing";
+            downloadBtn.style.display = "none";
+
+            let formData = new FormData();//功能箱
+            formData.append("file" , currentFile);//标签 file 文件
+            formData.append("algo" , selected.value);//标签 algo 算法
+
+            try{
+                //向cpp后端发送POST请求
+                let response = await/*阻塞等待*/ fetch("http://localhost:8080/compress" , {
+                    method : "POST",//设定请求方法 POST
+                    body : formData //作为请求体发送
+                });
+
+                //检查后端是否报错
+                if(!response.ok){
+                    let errMsg = await response.text();//
+                    throw new Error("Error: return" + errMsg);//主动抛出异常
+                }
+
+                // 如果后端没传（null），就设为 0；如果传了，就转成整数
+                let originHeader = response.headers.get("X-Original-Size");
+                let compressHeader = response.headers.get("X-Compressed-Size");
+                //HTTP响应头header获取真实数据 转换成十进制
+                let origSize = originHeader ? parseInt(originHeader , 10) : 0;
+                let compSize = compressHeader ? parseInt(compressHeader , 10) : 0;
+
+                compressedBlob = await response.blob();
+                // 必须用 .blob()，将整个响应体映射为内存中的一个 Blob 对象（Binary Large Object，二进制大对象）
+            
+                //更新大小数据
+                sizeText.innerText = origSize + "Byte";
+                compressedSize.innerText = compSize + "Byte";
+
+                let ratio = ((compSize / origSize) * 100).toFixed(2)/*保留两位小数*/;
+                compressRatio.innerText = ratio + "%";
+                document.getElementById("download-btn").style.display = "inline-block";//显示下载按钮
+                document.getElementById("download-card").style.display = "inline-block";
+
+
+            }catch (error){
+                console.error(error);
+                alert("compress failed:" + error.message);
+            } finally{//最终都会被执行
+                compressBtn.disabled = false;
+                compressBtn.innerText = "压缩";
+            }
+
+        
+        });
+
+        downloadBtn.addEventListener("click" , () =>{
+            if(!compressedBlob)
+            {
+                alert("please compress first");
+                return;
+            }
+            let url = window.URL.createObjectURL(compressedBlob);
+
+            let a = document.createElement("a");/*动态创建一个<a>标签*/
+            a.href = url;
+
+            let baseName = currentFile.name;
+            a.download = baseName + ".prism";
+
+            document.body.appendChild(a);/*把 a 标签加到页面上并模拟点击*/
+            a.click();
+
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        });
+
+        let decompressBtn = document.getElementById("decompress-btn");
+
+        decompressBtn.addEventListener("click", async () => {
+            if (!currentFile) {
+                alert("请先选择一个文件！");
+                return;
+            }
+
+            // 状态切换
+            decompressBtn.disabled = true;
+            decompressBtn.innerText = "解压中...";
+
+            let formData = new FormData();
+            formData.append("file", currentFile); // 这里传的是 .prism 文件
+
+            try {
+                let response = await fetch("http://localhost:8080/decompress", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    let errMsg = await response.text();
+                    throw new Error("服务器返回错误: " + errMsg);
+                }
+
+                // 接收二进制数据
+                let decompressedBlob = await response.blob();
+
+                // 触发下载
+                let url = window.URL.createObjectURL(decompressedBlob);
+                let a = document.createElement("a");
+                a.href = url;
+
+                // 去掉 .prism 后缀，还原成原文件名
+                let name = currentFile.name;
+                if (name.endsWith(".prism")) {
+                    name = name.substring(0, name.length - 6); 
+                }
+                a.download = name;
+
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error(error);
+                alert("解压失败: " + error.message);
+            } finally {
+                decompressBtn.disabled = false;
+                decompressBtn.innerText = "解压";
+            }
+        });
+    </script>
+</body>
+</html>
