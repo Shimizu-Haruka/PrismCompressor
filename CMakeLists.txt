@@ -32,9 +32,19 @@ add_executable(prism_cli
 target_link_libraries(prism_cli PRIVATE prism_core)
 
 # 6. 测试程序
-#add_executable(prism_tests
-#    tests/test_main.cpp
- #   tests/test_bit_writer.cpp
-    # ... 你的所有测试 .cpp 文件
+# 每个测试文件各自带 main()，独立成目标；test_main.cpp 只是 #include test_roundtrip.cpp
+# （其中已定义 main），单独构建会重复定义 main，故不加入；两个 0 字节的空测试文件同样不加入。
+enable_testing()
+set(PRISM_TEST_TARGETS
+    test_rle
+    test_lz77
+    test_huffman_tree
+    test_prism_format
+    test_file_io
+    test_roundtrip
 )
-target_link_libraries(prism_tests PRIVATE prism_core)
+foreach(test_target ${PRISM_TEST_TARGETS})
+    add_executable(${test_target} tests/${test_target}.cpp)
+    target_link_libraries(${test_target} PRIVATE prism_core)
+    add_test(NAME ${test_target} COMMAND ${test_target})
+endforeach()

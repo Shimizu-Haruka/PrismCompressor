@@ -11,7 +11,7 @@ ByteBuffer RLECompressor::compress(const ByteBuffer& input)const{
     Byte currentByte = input[0];
     Byte count = 1;
     for(size_t i = 1; i < input.size(); i++){
-        if(i == currentByte)
+        if(input[i] == currentByte)
         {
             if(count < maxRunLength)
             {
